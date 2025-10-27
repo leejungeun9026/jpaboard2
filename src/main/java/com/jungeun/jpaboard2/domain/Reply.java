@@ -6,11 +6,11 @@ import lombok.*;
 @Entity
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {"board", "member"})
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "jpa2_reply")
+@Table(name="jpa2_reply", indexes = {@Index(name = "idx_reply_bno", columnList = "bno")})
 public class Reply extends BaseEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

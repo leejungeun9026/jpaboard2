@@ -11,6 +11,9 @@ import java.util.List;
 
 @Repository
 public interface ReplyRepository extends JpaRepository<Reply, Long> {
+//  @Query("select r from Reply r where r.board.bno = :bno")
+//  List<Reply> findByBoardId(Long bno);
+
   @Query("select r from Reply r where r.board.bno = :bno")
-  List<Reply> listOfBoard(Long bno);
+  Page<Reply> findByBoardIdPage(Long bno, Pageable pageable);
 }

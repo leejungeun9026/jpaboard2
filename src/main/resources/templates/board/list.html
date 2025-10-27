@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout/layout}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<div layout:fragment="content">
+  <h2 class="mt-4 mb-3">List page</h2>
+  <form action="/board/list" method="get">
+    <input name="size" th:value="${pageRequestDTO.size}" type="hidden">
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="d-flex gap-2">
+          <div class="input-group">
+            <select class="form-select flex-shrink-1" name="type">
+              <option value="">선택</option>
+              <option th:selected="${pageRequestDTO.type=='tc'}" value="tc">제목+내용</option>
+              <option th:selected="${pageRequestDTO.type=='t'}" value="t">제목</option>
+              <option th:selected="${pageRequestDTO.type=='c'}" value="c">내용</option>
+              <option th:selected="${pageRequestDTO.type=='w'}" value="w">작성자</option>
+            </select>
+            <input class="form-control flex-grow-1" name="keyword" th:value="${pageRequestDTO.keyword}" type="text">
+            <button type="submit" class="btn btn-primary">검색</button>
+          </div>
+          <a href="/board/list" class="btn btn-secondary text-nowrap flex-shrink-1">초기화</a>
+        </div>
+      </div>
+    </div>
+  </form>
+  <div class="card">
+    <div class="card-body p-0">
+      <table class="table mb-0">
+        <thead>
+        <tr class="text-center">
+          <th>번호</th>
+          <th class="text-start">제목</th>
+          <th>작성자</th>
+          <th>날짜</th>
+          <th>조회수</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${#lists.isEmpty(pageResponseDTO.dtoList)}">
+          <td colspan="5" class="text-center">게시글이 없습니다.</td>
+        </tr>
+        <tr th:each="board:${pageResponseDTO.dtoList}" th:unless="${#lists.isEmpty(pageResponseDTO.dtoList)}" class="text-center">
+          <td>[[${board.bno}]]</td>
+          <td class="text-start">
+            <a th:href="|@{/board/view(bno=${board.bno}, mode=1)}&${pageRequestDTO.link}|">[[${board.title}]]</a>
+            <span class="badge text-bg-primary" style="font-size: 10px;">[[${board.replyCount}]]</span>
+          </td>
+          <td>[[${board.author}]]</td>
+          <td th:text="${#temporals.format(board.regDate, 'yyyy-MM-dd HH:mm')}"></td>
+          <td>[[${board.readcount}]]</td>
+        </tr>
+        </tbody>
+      </table>
+      <div class="d-flex gap-2 p-3">
+        <nav aria-label="Page navigation">
+          <ul class="pagination mb-0">
+            <li class="page-item" th:if="${pageResponseDTO.prev}">
+              <a class="page-link" style="cursor: pointer" th:data-num="${pageResponseDTO.start - 1}">&laquo;
+              </a>
+            </li>
+            <th:block th:each="i:${#numbers.sequence(pageResponseDTO.start, pageResponseDTO.end)}">
+              <li th:class="${pageResponseDTO.page == i} ? 'page-item active' : 'page-item'">
+                <a class="page-link" style="cursor: pointer" th:data-num="${i}">[[${i}]]</a>
+              </li>
+            </th:block>
+            <li class="page-item" th:if="${pageResponseDTO.next}">
+              <a class="page-link" style="cursor: pointer" th:data-num="${pageResponseDTO.end + 1}">&raquo;
+              </a>
+            </li>
+          </ul>
+        </nav>
+        <a class="ms-auto" th:href="@{/board/register}">
+          <button class="btn btn-primary" type="button">글쓰기</button>
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="modal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Modal title</h5>
+          <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+        </div>
+        <div class="modal-body">
+          <p>Modal body text goes here.</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" data-bs-dismiss="modal" type="button">확인</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script layout:fragment="pagescript" th:inline="javascript">
+    document.querySelector(".pagination").addEventListener("click", function (e) {
+        e.preventDefault()
+        e.stopPropagation()
+
+        const target = e.target
+        if (target.tagName !== 'A') {
+            return
+        }
+        const num = target.getAttribute("data-num")
+        // self.location = `/board/list?page=${num}`
+        const formObj = document.querySelector("form")
+        formObj.innerHTML += `<input type="hidden" name=page value="${num}">`
+        formObj.submit();
+    }, false)
+
+    const modal = new bootstrap.Modal(document.querySelector(".modal"))
+    let modalMsg = document.querySelector(".modal-body > p")
+    console.log(modalMsg)
+    const result = [[${result}]]
+    if (result) {
+        modalMsg.textContent = result
+        modal.show();
+    }
+</script>

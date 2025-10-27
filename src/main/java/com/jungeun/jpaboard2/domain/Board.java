@@ -7,7 +7,7 @@ import org.hibernate.annotations.ColumnDefault;
 @Entity
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "member")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
