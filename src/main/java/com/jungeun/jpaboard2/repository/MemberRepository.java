@@ -1,7 +1,10 @@
 package com.jungeun.jpaboard2.repository;
 
-import com.jungeun.jpaboard2.domain.Board;
+import com.jungeun.jpaboard2.domain.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface BoardRepository extends JpaRepository<Board, Long> {
+@Repository
+public interface MemberRepository extends JpaRepository<Member, Long> {
+  Member findByUsername(String username);
 }

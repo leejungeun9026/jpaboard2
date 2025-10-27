@@ -1,4 +1,4 @@
-package com.jungeun.jpademo.domain;
+package com.jungeun.jpaboard2.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

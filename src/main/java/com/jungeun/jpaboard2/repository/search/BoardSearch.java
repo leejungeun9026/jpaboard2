@@ -1,6 +1,6 @@
-package com.jungeun.jpademo.repository.search;
+package com.jungeun.jpaboard2.repository.search;
 
-import com.jungeun.jpademo.domain.Board;
+import com.jungeun.jpaboard2.domain.Board;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
