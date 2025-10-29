@@ -20,17 +20,46 @@ public class ReplyController {
   @Autowired
   private ReplyService replyService;
 
+  // 댓글 등록하기
   @PostMapping(value="/", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public Map<String, Long> register(@RequestBody ReplyDTO replyDTO) {
-    log.info(replyDTO.toString());
-    Map<String, Long> map = new HashMap<>();
+    log.info("ReplyDTO register......" + replyDTO);
     Long rno = replyService.insertReply(replyDTO);
+    Map<String, Long> map = new HashMap<>();
     map.put("rno", rno);
     return map;
   }
 
+  // bno로 댓글 리스트 가져오기
   @GetMapping("/list/{bno}")
   public PageResponseDTO<ReplyDTO> getReplies(@PathVariable("bno") Long bno, PageRequestDTO pageRequestDTO) {
     return replyService.getListOfBoard(bno, pageRequestDTO);
+  }
+
+  // rno로 댓글 1개 가져오기
+  @GetMapping("/{rno}")
+  public ReplyDTO read(@PathVariable("rno") Long rno) {
+    log.info(rno);
+    ReplyDTO replyDTO = replyService.findById(rno);
+    return replyDTO;
+  }
+
+  // rno로 댓글 삭제하기
+  @DeleteMapping("/{rno}")
+  public Map<String, Long> remove(@PathVariable("rno") Long rno){
+    log.info("remove.......");
+    replyService.deleteById(rno);
+    Map<String, Long> map = new HashMap<>();
+    map.put("rno", rno);
+    return map;
+  }
+
+  @PutMapping(value = "/{rno}", consumes =  MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public Map<String, Long> modify(@PathVariable("rno") Long rno, @RequestBody ReplyDTO replyDTO) {
+    replyDTO.setRno(rno);
+    replyService.modifyReply(replyDTO);
+    Map<String, Long> map = new HashMap<>();
+    map.put("rno", rno);
+    return map;
   }
 }

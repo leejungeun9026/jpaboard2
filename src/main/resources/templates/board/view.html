@@ -4,7 +4,7 @@
       layout:decorate="~{layout/layout}">
 <div layout:fragment="content">
   <h2 class="mt-4 mb-3">View page</h2>
-  <div class="card">
+  <div class="card mb-3">
     <div class="card-body">
       <table class="table align-middle">
         <tbody>
@@ -34,27 +34,80 @@
         <a th:href="|@{/board/list}?${link}|">
           <button class="btn btn-secondary" type="button">목록</button>
         </a>
-        <button class="btn btn-danger ms-auto" type="button" onclick="showModal()">삭제</button>
+        <button class="btn btn-danger ms-auto deleteModalBtn" type="button">삭제</button>
         <th:block th:with="link=${pageRequestDTO.link}">
           <a th:href="|@{/board/modify(bno=${boardDTO.bno}, mode=2)}&${link}|" class="btn btn-primary">수정</a>
         </th:block>
       </div>
     </div>
   </div>
+  <div>
+    <button class="btn btn-info addReplyBtn">댓글 추가</button>
+    <ul class="list-group mt-3 replyList">
+    </ul>
+    <ul class="pagination replyPaging mb-0">
+    </ul>
+  </div>
 
-  <div class="modal" tabindex="-1">
+  <div class="modal deleteModal" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">알림창</h5>
+          <h5 class="modal-title">경고</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <p>정말로 삭제하시겠습니까?</p>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">돌아가기</button>
-          <button type="button" class="btn btn-danger btnRemove">삭제하기</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+          <button type="button" class="btn btn-danger removeBtn">삭제하기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal replyRegisterModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">댓글 작성</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="input-group mb-2">
+            <span class="input-group-text">작성자</span>
+            <input type="text" class="form-control author" placeholder="작성자" aria-label="작성자">
+          </div>
+          <div class="input-group">
+            <span class="input-group-text">내용</span>
+            <input type="text" class="form-control replyRegisterText" placeholder="댓글 내용 입력..." aria-label="내용">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+          <button type="button" class="btn btn-primary replyRegisterBtn">저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal replyModifyModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title replyHeader"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="input-group">
+            <span class="input-group-text">내용</span>
+            <input type="text" class="form-control replyModifyText" placeholder="댓글 내용 입력..." aria-label="내용">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+          <button type="button" class="btn btn-secondary replyRemoveBtn">삭제</button>
+          <button type="button" class="btn btn-primary replyModifyBtn">저장</button>
         </div>
       </div>
     </div>
@@ -62,13 +115,181 @@
 </div>
 
 <script layout:fragment="pagescript" th:inline="javascript">
-  const modal = new bootstrap.Modal(document.querySelector(".modal"))
-  let bno= [[${boardDTO.bno}]]
-  function showModal(){
-      modal.show();
-      document.querySelector(".btnRemove").addEventListener("click", function(e){
+  /*
+  게시글 삭제 Modal
+  */
+  const bno = [[${boardDTO.bno}]]
+  const deleteModal = new bootstrap.Modal(document.querySelector(".deleteModal"))
+  const removeBtn = document.querySelector(".removeBtn")
+
+  document.querySelector(".deleteModalBtn").addEventListener("click", function(e){
+      deleteModal.show();
+      removeBtn.addEventListener("click", function(e){
           e.preventDefault()
           location.href=`/board/remove?bno=${bno}`
-      })
+      }, false)
+  }, false)
+
+
+
+  /*
+  댓글 리스트 & 페이징 관련
+  */
+  const replyList = document.querySelector(".replyList")
+  const replyPaging = document.querySelector(".replyPaging")
+
+  function printReplyList(dtoList) {
+      let str = '';
+      if(dtoList && dtoList.length > 0) {
+        for(let dto of dtoList) {
+            str += `<li class="list-group-item d-flex replyItem">
+                      <span class="col-1">${dto.rno}</span>
+                      <span class="col" data-num="${dto.rno}">${dto.content}</span>
+                      <span class="col-2">${dto.author}</span>
+                      <span class="col-4">${dto.regDate}</span>
+                    </li>`
+        }
+      }
+      replyList.innerHTML = str
   }
+
+  function printPages(data){
+      let pageStr = ''
+      pageStr += `<li class="page-item ${data.page === data.first ? 'disabled' : ''}">
+                    <a class="page-link" data-page="${data.first}" style="cursor: pointer;">≪</a>
+                  </li>`;
+      pageStr += `<li class="page-item ${!data.prev ? 'disabled' : ''}">
+                    <a class="page-link" data-page="${data.start-1}" style="cursor: pointer;">&lt;</a>
+                  </li>`
+      for(let i = data.start; i<= data.end; i++) {
+          pageStr += `<li class="page-item ${i == data.page ? 'active' : ''}">
+                        <a class="page-link" data-page="${i}" style="cursor: pointer;">${i}</a>
+                      </li>`
+      }
+      pageStr += `<li class="page-item ${!data.next ? 'disabled' : ''}">
+                    <a class="page-link" data-page="${data.end+1}" style="cursor: pointer;">&gt;</a>
+                  </li>`
+      pageStr += `<li class="page-item ${data.page === data.last ? 'disabled' : ''}">
+                    <a class="page-link" data-page="${data.last}" style="cursor: pointer;">≫</a>
+                  </li>`;
+      replyPaging.innerHTML = pageStr
+  }
+
+  function printReplies(page, size, goLast) {
+      getList({bno, page, size, goLast}).then(
+          data=>{
+              printReplyList(data.dtoList)
+              printPages(data)
+          }
+      )
+  }
+
+  printReplies(1, 3, true)
+
+
+
+  /*
+  댓글 등록 관련
+   */
+  const replyRegisterModal = new bootstrap.Modal(document.querySelector(".replyRegisterModal"))
+  const author = document.querySelector(".author")
+  const replyRegisterText = document.querySelector(".replyRegisterText")
+  const replyRegisterBtn = document.querySelector(".replyRegisterBtn")
+
+  document.querySelector(".addReplyBtn").addEventListener("click", function(e){
+      replyRegisterModal.show()
+  }, false)
+
+  // closeBtn.addEventListener("click", function(e){
+  //     replyRegisterModal.hide()
+  // }, false)
+
+  replyRegisterBtn.addEventListener("click", function(e){
+      const replyObj = {
+          bno : bno,
+          content : replyRegisterText.value,
+          author : author.value
+      }
+      addReply(replyObj).then(result=>{
+          replyRegisterModal.hide()
+          replyRegisterText.value = ''
+          author.value = ''
+          printReplies(1, 3, true)
+      }).catch((e)=>{
+          alert("댓글 입력 오류")
+      }, false)
+  }, false)
+
+
+
+  /*
+  댓글 수정 관련
+  */
+  const replyModifyModal = new bootstrap.Modal(document.querySelector(".replyModifyModal"))
+  const replyHeader = document.querySelector(".replyHeader")
+  const replyModifyText = document.querySelector(".replyModifyText")
+  const replyModifyBtn = document.querySelector(".replyModifyBtn")
+  const replyRemoveBtn = document.querySelector(".replyRemoveBtn")
+
+  replyList.addEventListener("click", function(e){
+      e.preventDefault()
+      e.stopPropagation()
+      const target = e.target;
+      if(!target || target.tagName != 'SPAN'){
+          return
+      }
+      const rno = target.getAttribute("data-num")
+      if(!rno) {
+          return
+      }
+      getReply(rno).then(reply=>{
+          replyHeader.innerHTML = reply.rno
+          replyModifyText.value = reply.content
+          replyModifyModal.show()
+      })
+
+      replyModifyBtn.addEventListener("click", function(e){
+          const replyObj = {
+              rno: replyHeader.innerHTML,
+              content: replyModifyText.value
+          }
+          modifyReply(replyObj).then(result=>{
+              alert(result.rno + "번 댓글이 수정되었습니다.");
+              replyModifyText.value=''
+              replyModifyModal.hide()
+              printReplies(page, size)
+          }).catch(e=>{
+              console.log(e)
+          })
+      })
+
+      replyRemoveBtn.addEventListener("click", function(e){
+          deleteReply(replyHeader.innerHTML).then(result=>{
+              alert(result.rno+"번 댓글이 삭제되었습니다.")
+              replyModifyText.value=''
+              replyModifyModal.hide()
+              printReplies(page, size, true)
+          })
+      })
+  }, false)
+
+
+  /*
+  댓글 페이지 클릭 시 이동 처리
+  */
+  let page = 1
+  let size = 3
+  replyPaging.addEventListener("click", function(e){
+      e.preventDefault()
+      e.stopPropagation()
+
+      const target = e.target;
+      if(!target || target.tagName==!'A'){
+          return
+      }
+
+      const pageNum = target.getAttribute("data-page")
+      page = pageNum
+      printReplies(page, size)
+  }, false)
 </script>

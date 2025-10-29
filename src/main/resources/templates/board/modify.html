@@ -21,21 +21,21 @@
   <div class="card">
     <div class="card-body">
       <form action="/board/modify" method="post" onsubmit="return validateForm(this)">
-        <input type="hidden" name="bno" th:value="${board.bno}">
-        <input type="hidden" name="author" th:value="${board.author}">
+        <input type="hidden" name="bno" th:value="${boardDTO.bno}">
+        <input type="hidden" name="author" th:value="${boardDTO.author}">
         <table class="table align-middle">
           <tbody>
           <tr>
             <td style="width: 20%;">작성자</td>
-            <td style="width: 80%;"><span style="padding:0.375rem 0.75rem;">[[${board.author}]]</span></td>
+            <td style="width: 80%;"><span style="padding:0.375rem 0.75rem;">[[${boardDTO.author}]]</span></td>
           </tr>
           <tr>
             <td><label class="form-label mb-0" for="title">제목 <span class="text-danger">(필수)</span></label></td>
-            <td><input class="form-control" id="title" name="title" placeholder="제목을 입력해 주세요." type="text" th:value="${board.title}"></td>
+            <td><input class="form-control" id="title" name="title" placeholder="제목을 입력해 주세요." type="text" th:value="${boardDTO.title}"></td>
           </tr>
           <tr>
             <td><label class="form-label mb-0" for="content">내용 <span class="text-danger">(필수)</span></label></td>
-            <td><textarea class="form-control" id="content" name="content" rows="10" placeholder="내용을 입력해 주세요.">[[${board.content}]]</textarea></td>
+            <td><textarea class="form-control" id="content" name="content" rows="10" placeholder="내용을 입력해 주세요.">[[${boardDTO.content}]]</textarea></td>
           </tr>
           </tbody>
         </table>

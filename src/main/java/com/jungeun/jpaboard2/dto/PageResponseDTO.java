@@ -18,6 +18,8 @@ public class PageResponseDTO<E> {
   private int end;    // 페이지 블록 마지막
   private boolean prev; // 이전 블록 유무
   private boolean next; // 다음 블록 유무
+  private int first;
+  private int last;
   private List<E> dtoList;  // 실제 데이터 목록
 
   @Builder(builderMethodName = "withAll")
@@ -28,17 +30,21 @@ public class PageResponseDTO<E> {
     this.pageBlockSize = 3;
     this.dtoList = dtoList;
 
-    // 전체 마지막 페이지 (total이 0이면 1페이지로 간주)
-    int lastPage = Math.max(1, (int) Math.ceil((double) total / this.size));
+    this.first = 1;
 
-    this.end = (int) (Math.ceil(this.page / (double) this.pageBlockSize)) * this.pageBlockSize;
-    this.start = this.end - (this.pageBlockSize - 1);
+    // 전체 마지막 페이지 (total이 0이면 1페이지로 간주)
+    this.last = Math.max(1, (int) Math.ceil((double) total / this.size));
+
+    int tempEnd = (int) (Math.ceil(this.page / (double) pageBlockSize) * pageBlockSize);
+    this.start = tempEnd - (pageBlockSize - 1);
+    this.end = Math.min(tempEnd, this.last);
+
     // 보정
-    if (this.end > lastPage) this.end = lastPage;
+    if (this.end > this.last) this.end = this.last;
     if (this.start < 1) this.start = 1;
 
     // 이전/다음 블록 여부
     this.prev = this.start > 1;
-    this.next = this.end < lastPage;
+    this.next = this.end < this.last;
   }
 }

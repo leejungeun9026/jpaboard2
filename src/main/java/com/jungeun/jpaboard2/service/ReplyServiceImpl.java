@@ -58,14 +58,14 @@ public class ReplyServiceImpl implements ReplyService {
     replyRepository.deleteById(rno);
   }
 
-  @Override
-  public List<ReplyDTO> findAllByBoard(Long bno) {
-    return List.of();
-  }
+//  @Override
+//  public List<ReplyDTO> findAllByBoard(Long bno) {
+//    return List.of();
+//  }
 
   @Override
   public PageResponseDTO<ReplyDTO> getListOfBoard(Long bno, PageRequestDTO pageRequestDTO) {
-    Pageable pageable = pageRequestDTO.getPageable("rno");
+    Pageable pageable = pageRequestDTO.getPageable();
     Page<Reply> result = replyRepository.findByBoardIdPage(bno, pageable);
     List<ReplyDTO> dtoList = result.getContent().stream().map(reply->entityToDTO(reply)).collect(Collectors.toList());
     return PageResponseDTO.<ReplyDTO>withAll()
