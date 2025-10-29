@@ -51,7 +51,8 @@ public class BoardServiceImpl implements BoardService {
 
   @Override
   public BoardDTO findById(Long bno, int mode) {
-    Board board = boardRepository.findById(bno).orElse(null);
+//    Board board = boardRepository.findById(bno).orElse(null);
+    Board board = boardRepository.findByIdWithImages(bno).orElse(null);
     BoardDTO boardDTO = entityToDTO(board);
     boardDTO.setAuthor(board.getMember().getName());
     if(mode == 1) {

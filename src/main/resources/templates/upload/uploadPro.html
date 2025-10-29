@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<div layout:fragment="content">
+  <h2 class="mt-4 mb-3">UploadPro page</h2>
+  <div>[[${boardDTO.title}]]</div>
+  <div>[[${boardDTO.content}]]</div>
+  <div>[[${boardDTO.author}]]</div>
+<!--  <div>[[${fileList}]]</div>-->
+
+  <ul th:each="file:${fileList}" th:unless="${#lists.isEmpty(fileList)}">
+    <li>filename: [[${file.filename}]]</li>
+    <li>uuid: [[${file.uuid}]]</li>
+    <li>link : [[${file.getLink()}]]</li>
+  </ul>
+
+  <ul class="list-group" th:if="${fileList != null && fileList.size() > 0}">
+    <li th:each="fileDTO:${fileList}" class="list-group-item">
+      <div th:if="${fileDTO.image}">
+        <img th:src="|/upload/view/${fileDTO.getLink()}|" alt="">
+      </div>
+        <p>
+          <span>[[${fileDTO.link}]]</span>
+          <a th:href="|@{/upload/remove(filename=${fileDTO.getLink()})}|" class="badge text-bg-danger">X</a>
+        </p>
+    </li>
+  </ul>
+</div>

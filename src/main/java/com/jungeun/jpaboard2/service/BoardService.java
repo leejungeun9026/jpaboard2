@@ -7,6 +7,7 @@ import com.jungeun.jpaboard2.dto.PageRequestDTO;
 import com.jungeun.jpaboard2.dto.PageResponseDTO;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public interface BoardService {
   Long insertBoard(BoardDTO boardDTO);
@@ -23,6 +24,12 @@ public interface BoardService {
         .title(boardDTO.getTitle())
         .content(boardDTO.getContent())
         .build();
+    if(boardDTO.getFilenames() != null) {
+      boardDTO.getFilenames().forEach(filename -> {
+        String[] arr = filename.split("_");
+        board.addImage(arr[0], arr[1]);
+      });
+    }
     return board;
   }
 
@@ -35,6 +42,12 @@ public interface BoardService {
         .regDate(board.getRegDate())
         .updateDate(board.getUpdateDate())
         .build();
+
+    List<String> filenames = board.getImageSet().stream()
+        .sorted()
+        .map(img->img.getUuid()+ "_" + img.getFilename())
+        .collect(Collectors.toList());
+    boardDTO.setFilenames(filenames);
     return boardDTO;
   }
 }

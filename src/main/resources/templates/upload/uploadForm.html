@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<div layout:fragment="content">
+  <h2 class="mt-4 mb-3">UploadForm page</h2>
+  <form action="/upload/uploadPro" method="post" enctype="multipart/form-data">
+    <input type="text" name="author" class="form-control mb-2" placeholder="작성자">
+    <input type="text" name="title" class="form-control mb-2" placeholder="제목">
+    <textarea name="content" rows="5" class="form-control mb-2" placeholder="내용"></textarea>
+    <input type="file" name="files" class="form-control mb-2" multiple>
+    <button type="submit" class="btn btn-primary">파일업로드</button>
+  </form>
+</div>

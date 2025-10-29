@@ -28,6 +28,19 @@
           <td>내용</td>
           <td colspan="3"><div style="white-space: pre-wrap">[[${boardDTO.content}]]</div></td>
         </tr>
+        <tr>
+          <td>첨부파일</td>
+          <td colspan="3">
+            <span class="input-group-text">목록</span>
+            <div th:if="${boardDTO.filenames != null && boardDTO.filenames.size > 0}">
+              <ul class="container-fluid d-flex gap-2 flex-wrap uploadResult">
+                <li th:each="filename:${boardDTO.filenames}" class="rounded overflow-hidden" style="width:80px; height:80px;">
+                  <img class="w-100 h-100" th:src="|/upload/view/s_${filename}|" style="object-fit: cover; object-position: center;">
+                </li>
+              </ul>
+            </div>
+          </td>
+        </tr>
         </tbody>
       </table>
       <div th:with="link=${pageRequestDTO.link}" class="d-flex justify-content-start gap-2">
@@ -43,8 +56,32 @@
   </div>
   <div>
     <button class="btn btn-info addReplyBtn">댓글 추가</button>
-    <ul class="list-group mt-3 replyList">
-    </ul>
+    <div class="card">
+      <div class="card-body">
+        <ul class="list-group replyList">
+        </ul>
+        <div class="reply_box border border-1 rounded-2 bg-light mt-2 p-3">
+          <div class="row g-1 align-bottom">
+            <div class="col-2">
+              <div>
+                <label class="form-label mb-0" for="replyer">작성자</label>
+                <input type="text" class="form-control author" id="replyer" placeholder="작성자">
+              </div>
+            </div>
+            <div class="col">
+              <div>
+                <label class="form-label mb-0" for="replyText">내용</label>
+                <input type="text" class="form-control replyRegisterText" id="replyText" placeholder="댓글 내용 입력...">
+              </div>
+            </div>
+            <div class="col-2 align-self-end">
+              <button class="btn btn-dark w-100">등록</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <ul class="pagination replyPaging mb-0">
     </ul>
   </div>
