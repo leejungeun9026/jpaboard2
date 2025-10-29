@@ -284,12 +284,14 @@
       e.stopPropagation()
 
       const target = e.target;
-      if(!target || target.tagName==!'A'){
+      if(!target || target.tagName !=='A'){
           return
       }
 
       const pageNum = target.getAttribute("data-page")
       page = pageNum
+      console.log(page)
       printReplies(page, size)
+
   }, false)
 </script>

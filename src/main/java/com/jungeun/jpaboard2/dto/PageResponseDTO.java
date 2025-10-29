@@ -40,7 +40,6 @@ public class PageResponseDTO<E> {
     this.end = Math.min(tempEnd, this.last);
 
     // 보정
-    if (this.end > this.last) this.end = this.last;
     if (this.start < 1) this.start = 1;
 
     // 이전/다음 블록 여부
