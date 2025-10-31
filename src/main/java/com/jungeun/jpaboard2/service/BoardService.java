@@ -1,10 +1,8 @@
 package com.jungeun.jpaboard2.service;
 
 import com.jungeun.jpaboard2.domain.Board;
-import com.jungeun.jpaboard2.dto.BoardDTO;
-import com.jungeun.jpaboard2.dto.BoardListReplyCountDTO;
-import com.jungeun.jpaboard2.dto.PageRequestDTO;
-import com.jungeun.jpaboard2.dto.PageResponseDTO;
+import com.jungeun.jpaboard2.domain.BoardImage;
+import com.jungeun.jpaboard2.dto.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,10 +22,9 @@ public interface BoardService {
         .title(boardDTO.getTitle())
         .content(boardDTO.getContent())
         .build();
-    if(boardDTO.getFilenames() != null) {
-      boardDTO.getFilenames().forEach(filename -> {
-        String[] arr = filename.split("_");
-        board.addImage(arr[0], arr[1]);
+    if(boardDTO.getBoardImageDTOs() != null) {
+      boardDTO.getBoardImageDTOs().forEach(imgDTO -> {
+        board.addImage(imgDTO.getUuid(), imgDTO.getFilename(), imgDTO.isImage());
       });
     }
     return board;
@@ -42,12 +39,20 @@ public interface BoardService {
         .regDate(board.getRegDate())
         .updateDate(board.getUpdateDate())
         .build();
-
-    List<String> filenames = board.getImageSet().stream()
+    List<BoardImageDTO> boardImageDTOs = board.getImageSet().stream()
         .sorted()
-        .map(img->img.getUuid()+ "_" + img.getFilename())
+        .map(img->imgEntityToDTO(img))
         .collect(Collectors.toList());
-    boardDTO.setFilenames(filenames);
+    boardDTO.setBoardImageDTOs(boardImageDTOs);
     return boardDTO;
+  }
+
+  default BoardImageDTO imgEntityToDTO(BoardImage boardImage){
+    return BoardImageDTO.builder()
+        .uuid(boardImage.getUuid())
+        .filename(boardImage.getFilename())
+        .image(boardImage.isImage())
+        .ord(boardImage.getOrd())
+        .build();
   }
 }

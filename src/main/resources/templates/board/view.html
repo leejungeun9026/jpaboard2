@@ -31,11 +31,19 @@
         <tr>
           <td>첨부파일</td>
           <td colspan="3">
-            <span class="input-group-text">목록</span>
-            <div th:if="${boardDTO.filenames != null && boardDTO.filenames.size > 0}">
-              <ul class="container-fluid d-flex gap-2 flex-wrap uploadResult">
-                <li th:each="filename:${boardDTO.filenames}" class="rounded overflow-hidden" style="width:80px; height:80px;">
-                  <img class="w-100 h-100" th:src="|/upload/view/s_${filename}|" style="object-fit: cover; object-position: center;">
+            <div th:if="${boardDTO.boardImageDTOs != null && boardDTO.boardImageDTOs.size > 0}">
+              <ul class="list-group uploadResult">
+                <li class="list-group-item bg-light">첨부파일 목록</li>
+                <li th:each="file:${boardDTO.boardImageDTOs}" class="list-group-item d-flex gap-2">
+                  <div class="rounded overflow-hidden" style="width:48px; height:48px;">
+                    <img class="w-100 h-100" th:if="${file.isImage()}" th:src="|/upload/view/s_${file.uuid}_${file.filename}|" style="object-fit: cover; object-position: center;">
+                    <img class="w-100 h-100" th:unless="${file.isImage()}" src="/image/file.png" style="object-fit: cover; object-position: center;">
+                  </div>
+                  <div>
+                    <p class="mb-1">[[${file.getFilename()}]]</p>
+                    <a th:if="${file.isImage()}" th:href="|/upload/view/${file.uuid}_${file.filename}|" target="_blank">[크게 보기]</a>
+                    <a th:href="|/upload/view/${file.uuid}_${file.filename}|" download>[다운받기]</a>
+                  </div>
                 </li>
               </ul>
             </div>
@@ -55,11 +63,14 @@
     </div>
   </div>
   <div>
-    <button class="btn btn-info addReplyBtn">댓글 추가</button>
     <div class="card">
       <div class="card-body">
-        <ul class="list-group replyList">
+        <button class="btn btn-info addReplyBtn">댓글 추가</button>
+        <ul class="list-group replyList my-2">
         </ul>
+        <ul class="pagination replyPaging mb-0">
+        </ul>
+        <!-- /*
         <div class="reply_box border border-1 rounded-2 bg-light mt-2 p-3">
           <div class="row g-1 align-bottom">
             <div class="col-2">
@@ -79,18 +90,16 @@
             </div>
           </div>
         </div>
+        */ -->
       </div>
     </div>
-
-    <ul class="pagination replyPaging mb-0">
-    </ul>
   </div>
 
   <div class="modal deleteModal" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">경고</h5>
+          <h5 class="modal-title">삭제 경고</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">

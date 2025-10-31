@@ -15,6 +15,7 @@ public class BoardImage implements Comparable<BoardImage>{
   private String uuid;
   private String filename;
   private int ord;
+  private boolean image;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name= "bno")
@@ -29,5 +30,4 @@ public class BoardImage implements Comparable<BoardImage>{
   public int compareTo(BoardImage other) {
     return this.ord - other.ord;
   }
-
 }

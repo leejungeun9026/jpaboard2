@@ -22,7 +22,7 @@ public class BoardDTO {
   @NotEmpty
   private String author;
   private int readcount;
-  private List<String> filenames;
   private LocalDateTime regDate;
   private LocalDateTime updateDate;
+  private List<BoardImageDTO> boardImageDTOs;
 }

@@ -1,9 +1,6 @@
 package com.jungeun.jpaboard2.controller;
 
-import com.jungeun.jpaboard2.dto.BoardDTO;
-import com.jungeun.jpaboard2.dto.BoardListReplyCountDTO;
-import com.jungeun.jpaboard2.dto.PageRequestDTO;
-import com.jungeun.jpaboard2.dto.PageResponseDTO;
+import com.jungeun.jpaboard2.dto.*;
 import com.jungeun.jpaboard2.dto.upload.UploadFileDTO;
 import com.jungeun.jpaboard2.dto.upload.UploadResultDTO;
 import com.jungeun.jpaboard2.service.BoardService;
@@ -12,6 +9,8 @@ import lombok.extern.log4j.Log4j2;
 import net.coobird.thumbnailator.Thumbnailator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -26,9 +25,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Controller
 @Log4j2
@@ -78,11 +75,11 @@ public class BoardController {
     }
 
     // 첨부파일 넣기
-    List<String> strFileNames = null;
+    List<BoardImageDTO> boardImageDTO = null;
     if(uploadFileDTO.getFiles() != null && !uploadFileDTO.getFiles().get(0).getOriginalFilename().equals("")) {
-      strFileNames = fileUpload(uploadFileDTO);
+      boardImageDTO = fileUpload(uploadFileDTO);
     }
-    boardDTO.setFilenames(strFileNames);
+    boardDTO.setBoardImageDTOs(boardImageDTO);
 
     // DB insert
     Long bno = boardService.insertBoard(boardDTO);
@@ -102,8 +99,22 @@ public class BoardController {
   }
 
   @PostMapping("/modify")
-  public String modify(BoardDTO boardDTO, RedirectAttributes redirectAttributes) {
+  public String modify(UploadFileDTO uploadFileDTO, BoardDTO boardDTO, RedirectAttributes redirectAttributes) {
     Long bno = boardService.updateBoard(boardDTO);
+
+    List<BoardImageDTO> boardImageDTO = null;
+    if(uploadFileDTO.getFiles() != null && !uploadFileDTO.getFiles().get(0).getOriginalFilename().equals("")) {
+      // 기존 파일 가져와서 삭제
+      BoardDTO boardDTO1 = boardService.findById(boardDTO.getBno(), 2);
+      List<BoardImageDTO> boardImageDTO1 = boardDTO1.getBoardImageDTOs();
+      if(boardImageDTO1 != null && !boardImageDTO1.isEmpty()) {
+        removeFile(boardImageDTO1);
+      }
+      // 새로운 파일 업로드
+      boardImageDTO = fileUpload(uploadFileDTO);
+    }
+    boardDTO.setBoardImageDTOs(boardImageDTO);
+    boardService.updateBoard(boardDTO);
     // 전달해야할 값이 많을 경우 RedirectAttributes사용
     redirectAttributes.addAttribute("bno", bno);
     redirectAttributes.addAttribute("mode", 2);
@@ -117,6 +128,11 @@ public class BoardController {
 
   @GetMapping("/remove")
   public String remove(@RequestParam("bno") Long bno, RedirectAttributes redirectAttributes) {
+    BoardDTO boardDTO = boardService.findById(bno, 2);
+    List<BoardImageDTO> boardImageDTOS = boardDTO.getBoardImageDTOs();
+    if(boardImageDTOS != null && !boardImageDTOS.isEmpty()) {
+      removeFile(boardImageDTOS);
+    }
     int result = boardService.deleteBoard(bno);
     if (result == 1){
       redirectAttributes.addFlashAttribute("result", "삭제 완료");
@@ -126,15 +142,13 @@ public class BoardController {
     }
   }
 
-  private List<String> fileUpload(UploadFileDTO uploadFileDTO) {
-    List<String> list = new ArrayList<>();
+  private List<BoardImageDTO> fileUpload(UploadFileDTO uploadFileDTO) {
+    List<BoardImageDTO> list = new ArrayList<>();
 
     // 파일에 값이 있으면 하나씩 저장
     if(uploadFileDTO.getFiles() != null){
       uploadFileDTO.getFiles().forEach(multipartFile -> {
         String originalName = multipartFile.getOriginalFilename();
-        log.info("fileNames...... : " + originalName);
-
         String uuid = UUID.randomUUID().toString();
         Path savePath = Paths.get(uploadPath, uuid+"_"+originalName);
 
@@ -151,9 +165,36 @@ public class BoardController {
         } catch (IOException e) {
           e.printStackTrace();
         }
-        list.add(uuid + "_" + originalName);
+        BoardImageDTO boardImageDTO = BoardImageDTO.builder()
+                    .uuid(uuid)
+                    .filename(originalName)
+                    .image(image)
+                    .build();
+        list.add(boardImageDTO);
       });
     }
     return list;
+  }
+
+  public void removeFile(List<BoardImageDTO> boardImageDTOs) {
+    for(BoardImageDTO dtos: boardImageDTOs){
+      String filename = dtos.getUuid()+"_"+dtos.getFilename();
+      Resource resource = new FileSystemResource(uploadPath+File.separator+filename);
+      log.info("remove filename...... : " + filename);
+      log.info("remove resource...... : " + resource);
+      String resourceName = resource.getFilename();
+      boolean removed = false;
+      try {
+        String contentType = Files.probeContentType(resource.getFile().toPath());
+        removed = resource.getFile().delete();
+        if(contentType.startsWith("image")){
+          // 썸네일이 있다면 s_삭제하고 오리지날 파일도 지움
+          File thumbnailFile = new File(uploadPath + File.separator + "s_" + filename);
+          thumbnailFile.delete();
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
   }
 }

@@ -20,7 +20,7 @@
   <h2 class="mt-4 mb-3">Edit page</h2>
   <div class="card">
     <div class="card-body">
-      <form action="/board/modify" method="post" onsubmit="return validateForm(this)">
+      <form action="/board/modify" method="post" onsubmit="return validateForm(this)"  enctype="multipart/form-data">
         <input type="hidden" name="bno" th:value="${boardDTO.bno}">
         <input type="hidden" name="author" th:value="${boardDTO.author}">
         <table class="table align-middle">
@@ -36,6 +36,26 @@
           <tr>
             <td><label class="form-label mb-0" for="content">내용 <span class="text-danger">(필수)</span></label></td>
             <td><textarea class="form-control" id="content" name="content" rows="10" placeholder="내용을 입력해 주세요.">[[${boardDTO.content}]]</textarea></td>
+          </tr>
+          <tr>
+            <td>첨부파일</td>
+            <td colspan="3">
+              <input type="file" class="form-control" name="files" id="files" multiple>
+              <div th:if="${boardDTO.boardImageDTOs != null && boardDTO.boardImageDTOs.size > 0}">
+                <ul class="list-group uploadResult mt-2">
+                  <li class="list-group-item bg-light">첨부파일 목록</li>
+                  <li th:each="file:${boardDTO.boardImageDTOs}" class="list-group-item d-flex gap-2">
+                    <div class="rounded overflow-hidden" style="width:48px; height:48px;">
+                      <img class="w-100 h-100" th:if="${file.isImage()}" th:src="|/upload/view/s_${file.uuid}_${file.filename}|" style="object-fit: cover; object-position: center;">
+                      <img class="w-100 h-100" th:unless="${file.isImage()}" src="/image/file.png" style="object-fit: cover; object-position: center;">
+                    </div>
+                    <div>
+                      <p class="mb-1">[[${file.getFilename()}]]</p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </td>
           </tr>
           </tbody>
         </table>

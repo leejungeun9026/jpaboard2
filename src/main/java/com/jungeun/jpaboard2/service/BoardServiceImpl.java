@@ -2,12 +2,10 @@ package com.jungeun.jpaboard2.service;
 
 import com.jungeun.jpaboard2.domain.Board;
 import com.jungeun.jpaboard2.domain.Member;
-import com.jungeun.jpaboard2.dto.BoardDTO;
-import com.jungeun.jpaboard2.dto.BoardListReplyCountDTO;
-import com.jungeun.jpaboard2.dto.PageRequestDTO;
-import com.jungeun.jpaboard2.dto.PageResponseDTO;
+import com.jungeun.jpaboard2.dto.*;
 import com.jungeun.jpaboard2.repository.BoardRepository;
 import com.jungeun.jpaboard2.repository.MemberRepository;
+import com.jungeun.jpaboard2.repository.ReplyRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +24,10 @@ import java.util.stream.Collectors;
 public class BoardServiceImpl implements BoardService {
   @Autowired
   private BoardRepository boardRepository;
-
   @Autowired
   private MemberRepository memberRepository;
+  @Autowired
+  private ReplyRepository replyRepository;
 
   @Override
   public Long insertBoard(BoardDTO boardDTO) {
@@ -66,15 +65,26 @@ public class BoardServiceImpl implements BoardService {
   public Long updateBoard(BoardDTO boardDTO) {
     Board board = boardRepository.findById(boardDTO.getBno()).orElse(null);
     board.change(boardDTO.getTitle(), boardDTO.getContent());
+
+    if(boardDTO.getBoardImageDTOs() != null) {
+      board.removeImage();
+      for(BoardImageDTO boardImageDTO : boardDTO.getBoardImageDTOs()) {
+        board.addImage(boardImageDTO.getUuid(), boardImageDTO.getFilename(), boardImageDTO.isImage());
+      }
+    }
     Long bno = boardRepository.save(board).getBno();
     return bno;
   }
 
   @Override
   public int deleteBoard(Long bno) {
+    Board board = boardRepository.findByIdWithImages(bno).orElse(null);
+    board.removeImage();
+    replyRepository.deleteByBoardId(bno);
     boardRepository.deleteById(bno);
-    Optional<Board> board = boardRepository.findById(bno);
-    if (board.isEmpty()) {
+
+    Optional<Board> existsBoard = boardRepository.findById(bno);
+    if (existsBoard.isEmpty()) {
       return 1;
     } else {
       return 0;
